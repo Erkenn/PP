@@ -1,20 +1,20 @@
 from django import forms
-
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 class GameAnalysisForm(forms.Form):
     GENRE_CHOICES = [
         (4, 'Action'),
-        (5, 'Adventure'),
-        (12, 'RPG'),
-        (40, 'Strategy'),
+        (5, 'RPG'),
+        (2, 'Shooter'),
+        (15, 'Sports'),
+        (40, 'Casual'),
         (51, 'Indie'),
         (14, 'Simulation'),
-        (11, 'Racing'),
+        (11, 'Arcade'),
         (7, 'Puzzle'),
-        (3, 'Platformer'),
-        (10, 'Sports'),
-        (15, 'Shooter'),
-        (2, 'Fighting'),
+        (3, 'Adventure'),
+        (6, 'Fighting'),
     ]
 
     genres = forms.MultipleChoiceField(
@@ -49,3 +49,10 @@ class GameAnalysisForm(forms.Form):
             raise forms.ValidationError("Год начала не может быть больше года окончания")
 
         return cleaned_data
+
+    class SignUpForm(UserCreationForm):
+        email = forms.EmailField(required=True)
+
+        class Meta:
+            model = User
+            fields = ("username", "email", "password1", "password2")

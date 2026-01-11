@@ -18,6 +18,23 @@
     | Период: {{ year_from }}–{{ year_to }}
 </div>
 
+<!-- Фильтрация -->
+{% if all_genres %}
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Фильтр по жанрам</h5>
+    </div>
+    <div class="card-body">
+        {% for genre in all_genres %}
+        <div class="form-check form-check-inline">
+            <input class="form-check-input genre-filter" type="checkbox" value="{{ genre }}" id="filter_{{ forloop.counter }}">
+            <label class="form-check-label" for="filter_{{ forloop.counter }}">{{ genre }}</label>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- Рекомендации -->
 {% if recommendations %}
 <div class="card mb-4">
@@ -98,13 +115,32 @@
 </div>
 {% endif %}
 
+<!-- Metacritic -->
+{% if rating_data %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Статистика по Metacritic</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Средний Metacritic:</strong> {{ rating_data.avg_metacritic }}/100</p>
+                <p><strong>Высокий (>=80):</strong> {{ rating_data.distribution.high }}</p>
+                <p><strong>Средний (60-79):</strong> {{ rating_data.distribution.medium }}</p>
+                <p><strong>Низкий (<60):</strong> {{ rating_data.distribution.low }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Игры -->
 {% if games %}
     <p class="lead">Найдено {{ games|length }} игр для анализа:</p>
     
-    <div class="row">
+    <div class="row" id="games-container">
         {% for game in games %}
-        <div class="col-md-6 col-lg-4 mb-4">
+        <div class="col-md-6 col-lg-4 mb-4 game-card" data-genres="{{ game.genres|join:', ' }}">
             <div class="card h-100">
                 {% if game.image_url %}
                 <img src="{{ game.image_url }}" class="card-img-top" alt="{{ game.title }}">
@@ -131,4 +167,33 @@
         <a href="{% url 'home' %}" class="btn btn-primary">Попробовать снова</a>
     </div>
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const genreCheckboxes = document.querySelectorAll('.genre-filter');
+    const gameCards = document.querySelectorAll('.game-card');
+
+    function filterGames() {
+        const selectedGenres = Array.from(genreCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        gameCards.forEach(card => {
+            const gameGenres = card.dataset.genres.split(', ');
+            if (selectedGenres.length === 0 || 
+                selectedGenres.some(g => gameGenres.includes(g))) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    genreCheckboxes.forEach(cb => {
+        cb.addEventListener('change', filterGames);
+    });
+
+    filterGames();
+});
+</script>
 {% endblock %}

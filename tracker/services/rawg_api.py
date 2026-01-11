@@ -35,3 +35,50 @@ class RawgAPIService:
         except Exception as e:
             print(f"API request failed: {e}")
             return None
+
+    def get_all_games(self, genre_ids=None, year_from=None, year_to=None):
+        all_games = []
+        page = 1
+
+        while True:
+            params = {
+                'key': self.api_key,
+                'page_size': 40,
+                'page': page,
+                'ordering': '-metacritic'
+            }
+
+            if genre_ids:
+                params['genres'] = ','.join(str(g) for g in genre_ids)
+
+            if year_from and year_to:
+                params['dates'] = f"{year_from}-01-01,{year_to}-12-31"
+            elif year_from:
+                params['dates'] = f"{year_from}-01-01,2025-12-31"
+            elif year_to:
+                params['dates'] = f"1970-01-01,{year_to}-12-31"
+
+            try:
+                response = requests.get(f"{self.BASE_URL}/games", params=params, timeout=10)
+                if response.status_code != 200:
+                    break
+
+                data = response.json()
+                games = data.get('results', [])
+
+                if not games:
+                    break
+
+                all_games.extend(games)
+
+                next_page = data.get('next')
+                if not next_page:
+                    break
+
+                page += 1
+
+            except Exception as e:
+                print(f"Error on page {page}: {e}")
+                break
+
+        return {'results': all_games}

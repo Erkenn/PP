@@ -9,8 +9,10 @@ class GameAnalyzer:
             self.df = pd.DataFrame()
             return
 
+        filtered_games = [game for game in games_data if game.get('rating', 0) > 0]
+
         df_data = []
-        for game in games_data:
+        for game in filtered_games:
             release_year = None
             if game.get('release_date') and game['release_date'] != 'Неизвестно':
                 try:
@@ -109,3 +111,21 @@ class GameAnalyzer:
                 f"Оптимальное окно релиза: Q2-Q3 {year_to + 1} (меньше конкуренции после рождественского периода).")
 
         return recommendations
+
+    def get_metacritic_analysis(self):
+        """Анализ Metacritic"""
+        if self.df.empty:
+            return None
+
+        avg_metacritic = self.df[self.df['metacritic'] > 0]['metacritic'].mean()
+        metacritic_distribution = {
+            'high': len(self.df[self.df['metacritic'] >= 80]),
+            'medium': len(self.df[(self.df['metacritic'] >= 60) & (self.df['metacritic'] < 80)]),
+            'low': len(self.df[self.df['metacritic'] < 60])
+        }
+
+        return {
+            'avg_metacritic': round(avg_metacritic, 1) if not pd.isna(avg_metacritic) else 0,
+            'distribution': metacritic_distribution,
+            'total_games': len(self.df)
+        }
