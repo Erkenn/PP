@@ -50,9 +50,9 @@ class GameAnalysisForm(forms.Form):
 
         return cleaned_data
 
-    class SignUpForm(UserCreationForm):
-        email = forms.EmailField(required=True)
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
 
-        class Meta:
-            model = User
-            fields = ("username", "email", "password1", "password2")
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
