@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Анализ игрового рынка для разработчиков</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">Выберите жанры и временной период для анализа рыночных трендов, конкуренции и перспектив.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.genres.label }}</label>
+                        <div class="row">
+                            {% for choice in form.genres %}
+                            <div class="col-md-4 genre-checkbox">
+                                {{ choice.tag }} {{ choice.choice_label }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.genres.errors %}
+                            <div class="text-danger">{{ form.genres.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.year_from.label }}</label>
+                            {{ form.year_from }}
+                            {% if form.year_from.errors %}
+                                <div class="text-danger">{{ form.year_from.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.year_to.label }}</label>
+                            {{ form.year_to }}
+                            {% if form.year_to.errors %}
+                                <div class="text-danger">{{ form.year_to.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search"></i> Анализировать рынок
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">Для кого этот инструмент?</h3>
+            </div>
+            <div class="card-body">
+                <p class="card-text">GameDev PP помогает indie-разработчикам принимать решения на основе реальных данных рынка видеоигр.</p>
+                <ul>
+                    <li><strong>Оценка перспектив жанра</strong> — растёт или падает интерес?</li>
+                    <li><strong>Анализ конкуренции</strong> — сколько игр выходит ежегодно?</li>
+                    <li><strong>Рекомендации по релизу</strong> — когда лучше выпускать игру?</li>
+                    <li><strong>Платформенная стратегия</strong> — какие платформы наиболее успешны?</li>
+                </ul>
+                <div class="alert alert-info mt-3">
+                    <strong>Данные:</strong> Источник — RAWG Video Games Database API<br>
+                    <strong>Период:</strong> 1970–2025 гг.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
