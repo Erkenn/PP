@@ -48,4 +48,4 @@ class GameAnalysisForm(forms.Form):
         if year_from and year_to and year_from > year_to:
             raise forms.ValidationError("Год начала не может быть больше года окончания")
 
-        return cleaned_datav
+        return cleaned_data

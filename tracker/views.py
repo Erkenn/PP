@@ -27,7 +27,7 @@ def home(request):
             )
 
             games_data = []
-            if api_data and 'results' in api_
+            if api_data and 'results' in api_data:
                 for game_data in api_data['results']:
                     # обработка даты релиза
                     release_date = game_data.get('released', '')
