@@ -18,6 +18,87 @@
     | Период: {{ year_from }}–{{ year_to }}
 </div>
 
+<!-- Рекомендации -->
+{% if recommendations %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Рекомендации для разработчиков</h3>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for recommendation in recommendations %}
+            <li class="list-group-item">{{ recommendation|safe }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- Графики -->
+<div class="row mb-4">
+    {% if yearly_chart %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                {{ yearly_chart|safe }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if rating_chart %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                {{ rating_chart|safe }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Статистика -->
+{% if trend_data or rating_data %}
+<div class="row mb-4">
+    {% if trend_data %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Статистика по релизам</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Всего игр:</strong> {{ trend_data.total_games }}</p>
+                <p><strong>Тренд:</strong> 
+                    {% if trend_data.trend_percentage > 0 %}
+                        <span class="text-success">+{{ trend_data.trend_percentage }}%</span>
+                    {% elif trend_data.trend_percentage < 0 %}
+                        <span class="text-danger">{{ trend_data.trend_percentage }}%</span>
+                    {% else %}
+                        <span class="text-warning">0%</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if rating_data %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Статистика по рейтингам</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Средний рейтинг:</strong> {{ rating_data.avg_rating }}/5</p>
+                <p><strong>Средний Metacritic:</strong> {{ rating_data.avg_metacritic }}/100</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Игры -->
 {% if games %}
     <p class="lead">Найдено {{ games|length }} игр для анализа:</p>
     
@@ -43,20 +124,10 @@
         </div>
         {% endfor %}
     </div>
-    
-    <div class="alert alert-warning mt-4">
-        <strong>Важно:</strong> Эти данные показывают текущую ситуацию на рынке. 
-        Для принятия решений рекомендуется анализировать динамику за несколько лет.
-    </div>
 {% else %}
     <div class="alert alert-warning">
         <h4>Нет данных для анализа</h4>
-        <p>Не удалось получить игры из API. Возможные причины:</p>
-        <ul>
-            <li>Проблемы с подключением к RAWG API</li>
-            <li>Неверный API-ключ</li>
-            <li>Слишком узкие параметры поиска</li>
-        </ul>
+        <p>Не удалось получить игры из API.</p>
         <a href="{% url 'home' %}" class="btn btn-primary">Попробовать снова</a>
     </div>
 {% endif %}

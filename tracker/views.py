@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from django.http import JsonResponse
 from .forms import GameAnalysisForm
 from .services.rawg_api import RawgAPIService
+from .analytics.game_analyzer import GameAnalyzer
+from .utils.charts import create_yearly_releases_chart, create_rating_distribution_chart
 import logging
 
 
@@ -55,14 +56,45 @@ def home(request):
                         'image_url': game_data.get('background_image', '')
                     })
 
+            analyzer = GameAnalyzer(games_data)
+
+            # рекомендации
+            genre_names = []
+            for genre_id in genre_ids:
+                for choice in form.fields['genres'].choices:
+                    if choice[0] == genre_id:
+                        genre_names.append(choice[1])
+                        break
+
+            recommendations = analyzer.generate_recommendations(genre_names, year_from, year_to)
+
+            # графики
+            trend_data = analyzer.get_genre_trends()
+            rating_data = analyzer.get_rating_analysis()
+
+            yearly_chart = ""
+            rating_chart = ""
+
+            if trend_data:
+                yearly_chart = create_yearly_releases_chart(trend_data['yearly_data'])
+
+            if rating_data:
+                rating_chart = create_rating_distribution_chart(rating_data['distribution'])
+
             return render(request, 'tracker/results.html', {
                 'form': form,
                 'games': games_data,
                 'year_from': year_from,
                 'year_to': year_to,
-                'genre_count': len(genre_ids)
+                'genre_count': len(genre_ids),
+                'recommendations': recommendations,
+                'yearly_chart': yearly_chart,
+                'rating_chart': rating_chart,
+                'trend_data': trend_data,
+                'rating_data': rating_data
             })
+        else:
+            pass
     else:
         form = GameAnalysisForm()
-
     return render(request, 'tracker/home.html', {'form': form})
