@@ -5,6 +5,8 @@ from .utils.charts import create_yearly_releases_chart, create_rating_distributi
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login
+from .models import Game, Genre, Platform
+from datetime import datetime
 
 
 def home(request):
@@ -38,28 +40,64 @@ def home(request):
             games_data = []
             if api_data and 'results' in api_data:
                 for game_data in api_data['results']:
-                    release_date = game_data.get('released', '')
-                    if not release_date:
-                        release_date = 'Неизвестно'
+                    release_date_str = game_data.get('released', '')
+                    release_date_parsed = None
+                    if release_date_str:
+                        try:
+                            release_date_parsed = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                        except:
+                            pass
 
                     genres_list = []
                     genres_ids = []
-                    for genre in game_data.get('genres', []):
-                        genres_list.append(genre.get('name', ''))
-                        genres_ids.append(genre.get('id', 0))
+                    for genre_raw in game_data.get('genres', []):
+                        genre_id = genre_raw.get('id')
+                        genre_name = genre_raw.get('name', '')
+                        if genre_id:
+                            genre_obj, _ = Genre.objects.get_or_create(
+                                rawg_id=genre_id,
+                                defaults={'name': genre_name, 'slug': str(genre_id)}
+                            )
+                            genres_list.append(genre_name)
+                            genres_ids.append(genre_id)
 
                     platforms_list = []
-                    platforms_data = game_data.get('platforms')
-                    if platforms_data:
-                        for platform in platforms_data:
-                            if 'platform' in platform:
-                                platforms_list.append(platform['platform'].get('name', ''))
+                    platforms_data = game_data.get('platforms') or []
+                    for platform_raw in platforms_data:
+                        plat_data = platform_raw.get('platform', {})
+                        plat_id = plat_data.get('id')
+                        plat_name = plat_data.get('name', '')
+                        if plat_id:
+                            plat_obj, _ = Platform.objects.get_or_create(
+                                rawg_id=plat_id,
+                                defaults={'name': plat_name, 'slug': str(plat_id)}
+                            )
+                            platforms_list.append(plat_name)
+
+                    rawg_game_id = game_data.get('id')
+                    if rawg_game_id:
+                        game_obj, created = Game.objects.get_or_create(
+                            rawg_id=rawg_game_id,
+                            defaults={
+                                'title': game_data.get('name', 'Unknown'),
+                                'release_date': release_date_parsed,
+                                'rating': float(game_data.get('rating', 0) or 0),
+                                'metacritic': int(game_data.get('metacritic') or 0),
+                                'image_url': game_data.get('background_image', ''),
+                                'slug': str(rawg_game_id),
+                            }
+                        )
+                        if created or not game_obj.genres.exists():
+                            game_obj.genres.set(Genre.objects.filter(rawg_id__in=genres_ids))
+                        if created or not game_obj.platforms.exists():
+                            game_obj.platforms.set(Platform.objects.filter(
+                                rawg_id__in=[p.rawg_id for p in Platform.objects.filter(name__in=platforms_list)]))
 
                     games_data.append({
                         'title': game_data.get('name', 'Unknown'),
                         'rating': game_data.get('rating', 0),
                         'metacritic': game_data.get('metacritic', 0) or 0,
-                        'release_date': release_date,
+                        'release_date': release_date_str or 'Неизвестно',
                         'genres': genres_list,
                         'genres_ids': genres_ids,
                         'platforms': platforms_list,

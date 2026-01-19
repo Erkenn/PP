@@ -26,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-for-dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['Erkenn.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -122,5 +122,4 @@ STATIC_URL = 'static/'
 
 RAWG_API_KEY = os.getenv('RAWG_API_KEY')
 
-import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
